@@ -111,8 +111,8 @@ def train_model():
     novel_files = [
         "text/sanguoyanyi.txt",
         "text/tian_long_ba_bu_all.txt",
-        "text/other_novel1.txt",  # 添加更多小说
-        "text/other_novel2.txt"
+        # "text/other_novel1.txt",  # 添加更多小说
+        # "text/other_novel2.txt"
     ]
     
     # 创建分词器
