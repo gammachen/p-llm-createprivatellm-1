@@ -354,9 +354,52 @@ ls ./novel_model and find added files.
 15 directories, 37 files
 ```
 
-#### test model
+#### 使用方法
 
+#### 1. 训练模型
+```bash
+# 训练并生成示例
+python train_small_model.py
+
+# 仅训练模型
+python train_small_model.py --mode train
+
+# 训练并保存到自定义路径
+python train_small_model.py --mode train --model_path ./my_model
 ```
+
+#### 2. 生成文本
+
+**使用训练脚本生成：**
+```bash
+# 使用已训练的模型生成文本
+python train_small_model.py --mode generate
+
+# 指定提示词生成
+python train_small_model.py --mode generate --prompt "郭靖和黄蓉"
+
+# 指定生成长度
+python train_small_model.py --mode generate --prompt "乔峰" --max_length 200
+```
+
+**使用独立生成脚本：**
+```bash
+# 交互式生成
+python generate_text.py --interactive
+
+# 指定提示词生成
+python generate_text.py --prompt "吕布手持方天画戟" --max_length 150
+
+# 批量生成
+python generate_text.py --batch "吕布" "乔峰" "郭靖"
+
+# 指定模型路径
+python generate_text.py --model_path ./my_model --prompt "诸葛亮"
+```
+
+#### 3. 测试模型
+
+```python
 from transformers import pipeline, set_seed
 generator = pipeline('text-generation', model='./novel_model')
 set_seed(42)

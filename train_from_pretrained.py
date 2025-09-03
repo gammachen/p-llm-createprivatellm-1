@@ -24,10 +24,10 @@ from transformers import Trainer, TrainingArguments
 training_args = TrainingArguments(
     output_dir="./output",
     num_train_epochs=5,
-    per_gpu_train_batch_size=4,
+    per_device_train_batch_size=4,
     gradient_accumulation_steps=8,
     learning_rate=3e-5,
-    # evaluation_strategy="steps",
+    eval_strategy="steps",
     eval_steps=1000,
     save_steps=2000,
     logging_steps=100,
