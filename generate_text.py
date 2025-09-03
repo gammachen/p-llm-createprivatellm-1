@@ -36,31 +36,36 @@ def generate_text(model, tokenizer, prompt, max_length=100, num_sequences=1):
     # 设置随机种子
     set_seed(42)
     
-    # 生成文本
+    # 生成文本 - 优化版
     try:
-        # 使用pipeline简化生成过程
+        # 使用优化的生成参数
         generator = pipeline(
             'text-generation',
             model=model,
             tokenizer=tokenizer,
-            device=-1  # 使用CPU
+            device=-1
         )
         
-        # 限制输入长度以避免超出模型范围
-        inputs = tokenizer.encode(prompt, return_tensors="pt", truncation=True, max_length=50)
-        if inputs.shape[1] >= 40:  # 如果输入太长，截断
-            prompt = tokenizer.decode(inputs[0][:30], skip_special_tokens=True)
-
-        # 生成文本
-        outputs = generator(
-            prompt,
-            max_new_tokens=min(max_length - len(tokenizer.encode(prompt)), 20),  # 限制新增token
-            do_sample=True,
-            temperature=0.7,
-            pad_token_id=tokenizer.eos_token_id,
-            repetition_penalty=1.1,
-            num_return_sequences=num_sequences
-        )
+        # 优化的生成参数
+        generation_params = {
+            'max_new_tokens': max_length,
+            'do_sample': True,
+            'temperature': 0.8,  # 稍微提高温度增加多样性
+            'top_k': 50,        # 限制词汇选择
+            'top_p': 0.9,       # 核心采样
+            'repetition_penalty': 1.2,  # 更强的重复惩罚
+            'no_repeat_ngram_size': 3,  # 避免3-gram重复
+            'pad_token_id': tokenizer.eos_token_id,
+            'num_return_sequences': num_sequences,
+            'early_stopping': True
+        }
+        
+        # 添加上下文提示
+        enhanced_prompt = f"{prompt}"
+        if len(prompt) < 10:  # 如果提示太短，添加一些上下文
+            enhanced_prompt = f"在武侠世界中，{prompt}"
+        
+        outputs = generator(enhanced_prompt, **generation_params)
         
         results = []
         for output in outputs:
@@ -70,7 +75,22 @@ def generate_text(model, tokenizer, prompt, max_length=100, num_sequences=1):
         
     except Exception as e:
         print(f"生成文本时出错: {e}")
-        return []
+        # 简化参数重试
+        try:
+            generator = pipeline(
+                'text-generation',
+                model=model,
+                tokenizer=tokenizer
+            )
+            outputs = generator(prompt, max_length=max_length, do_sample=True)
+            results = []
+            for output in outputs:
+                generated_text = output['generated_text']
+                results.append({'generated_text': generated_text})
+            return results
+        except Exception as e2:
+            print(f"重试也失败: {e2}")
+            return []
 
 def interactive_mode(model, tokenizer):
     """交互式生成模式"""
